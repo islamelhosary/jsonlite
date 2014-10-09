@@ -80,12 +80,13 @@ fromJSON <- function(txt, simplifyVector = TRUE, simplifyDataFrame = simplifyVec
   }
 
   # overload for URL or path
-  if (length(txt) == 1 && nchar(txt) < 1000) {
-    if (grepl("^https?://", txt)) {
+  if (length(txt) == 1 && nchar(txt, type="bytes") < 1000) {
+    if (grepl("^https?://", txt, useBytes=TRUE)) {
       loadpkg("httr")
-      txt <- download(txt)
+      txt <- raw_to_json(download_raw(txt))
     } else if (file.exists(txt)) {
-      txt <- paste(readLines(txt, warn = FALSE), collapse = "\n")
+      # With files we can never know for sure the encoding. Lets try UTF8 first.
+      txt <- raw_to_json(readBin(txt, raw(), file.info(txt)$size));
     }
   }
 
